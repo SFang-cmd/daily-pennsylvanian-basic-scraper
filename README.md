@@ -1,112 +1,74 @@
-# Basic Git Scraper Template
-
-This template provides a starting point for **git scraping**—the technique of scraping data from websites and automatically committing it to a Git repository using workflows, [coined by Simon Willison](https://simonwillison.net/2020/Oct/9/git-scraping/).
-
-Git scraping helps create an audit trail capturing snapshots of data over time. It leverages Git's version control and a continuous integration's scheduling capabilities to regularly scrape sites and save data without needing to manage servers.
-
-The key benefit is automating web scrapers to run on a schedule with little overhead. The scraped data gets stored incrementally so you can review historical changes. This helps enable use-cases like price monitoring, content updates tracking, research datasets building, and more. The ability to have these resources for virtually free, enables the use of this technique for a wide range of projects.
-
-Tools like GitHub Actions, GitLab CI and others make git scraping adaptable to diverse sites and data needs. The scraping logic just needs to output data serialized formats like CSV, JSON etc which gets committed back to git. This makes the data easily consumable downstream for analysis and vis.
-
-This template includes a sample workflow to demonstrate the core git scraping capabilities. Read on to learn how to customize it!
-
-## Overview
-
-The workflow defined in `.github/workflows/scrape.yaml` runs on a defined schedule to:
-
-1. Checkout the code
-2. Set up the Python environment
-3. Install dependencies via Pipenv
-4. Run the python script `script.py` to scrape data
-5. Commit any updated data files to the Git repository
-
-## Scheduling
-
-The workflow schedule is configured with [cron syntax](https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#schedule) to run:
-
-- Every day at 8PM UTC
-
-This once-daily scraping is a good rule-of-thumb, as it is generally respectful of the target website, as it does not contribute to any measurable burden to the site's resources.
-
-You can use [crontab.guru](https://crontab.guru/) to generate your own cron schedule.
-
-## Python Libraries
-
-The main libraries used are:
-
-- [`bs4`](https://www.crummy.com/software/BeautifulSoup/) - BeautifulSoup for parsing HTML
-- [`requests`](https://requests.readthedocs.io/en/latest/) - Making HTTP requests to scrape web pages
-- [`loguru`](https://github.com/Delgan/loguru) - Logging errors and run info
-- [`pytz`](https://github.com/stub42/pytz) - Handling datetimes and timezones  
-- [`waybackpy`](https://github.com/akamhy/waybackpy/) - Scraping web archives (optional)
-
-## Getting Started
-
-To adapt this for your own scraping project:
-
-- Use [this template to create your own repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-repository-from-a-template#creating-a-repository-from-a-template)
-- Modify `script.py` to scrape different sites and data points:
-  - Modifying the request URL
-  - Parsing the HTML with BeautifulSoup to extract relevant data
-  - Processing and outputting the scraped data as CSV, JSON etc
-- Update the workflow schedule as needed
-- Output and commit the scraped data to CSV, JSON or other formats
-- Add any additional libraries to `Pipfile` that you need
-- Update this `README.md` with project specifics
-
-Feel free to use this as a starter kit for your Python web scraping projects!
-
-## Setting Up a Local Development
-
-It is recommended to use a version manager, and virtual environments and environment managers for local development of Python projects.
-
-**asdf** is a version manager that allows you to easily install and manage multiple versions of languages and runtimes like Python. This is useful so you can upgrade/downgrade Python versions without interfering with your system Python.
-
-**Pipenv** creates a **virtual environment** for your project to isolate its dependencies from other projects. This allows you to install packages safely without impacting globally installed packages that other tools or apps may rely on. The virtual env also allows reproducibility of builds across different systems.
-
-Below we detail how to setup these environments to develop this template scrape project locally.
-
-### Setting Up a Python Environment
-
-Once you have installed `asdf`, you can install the Python plugin with:
-
-```bash
-asdf plugin add python
-```
-
-Then you can install the latest version of Python with:
-
-```bash
-asdf install python latest
-```
-
-After that, you can first install `pipenv` with:
-
-```bash
-pip install pipenv
-```
-
-### Installing Project Dependencies
-
-Then you can install the dependencies with:
-
-```bash
-pipenv install --dev
-```
-
-This will create a virtual environment and install the dependencies from the `Pipfile`. The `--dev` flag will also install the development dependencies, which includes `ipykernel` for Jupyter Notebook support.
-
-### Running the Script
-
-You can then run the script to try it out with:
-
-```bash
-pipenv run python script.py
-```
+# Daily Pennsylvanian Headline Scraper
 
 ---
 
-## Modifying the Scraper’s Rule — What Changed?
+## Overview
+
+This project is a Python-based web scraper designed to collect headlines from [The Daily Pennsylvanian](https://www.thedp.com), the University of Pennsylvania's independent student newspaper. The code was adapted from a generic web scraping template and customized specifically for the DP's website structure and ethical guidelines.
+
+**Key Features:**
+- Scrapes the most recent/featured news headline as presented in the homepage sidebar.
+- Stores daily headline data over time in a JSON file for historical tracking.
+- Uses robust CSS selectors tailored for the DP homepage's current layout.
+- Built with extensibility and ethical considerations in mind.
+
+---
+
+## How It Works
+
+1. **Fetch the homepage:**  
+   The script makes a request to thedailypennsylvanian.com with a desktop browser User-Agent header.
+
+2. **Parse the main sidebar:**  
+   Using BeautifulSoup, it locates the sidebar that contains top stories.
+
+3. **Extract the current headline:**  
+   The scraper targets the first featured story's headline link and saves its text.
+
+4. **Track and store:**  
+   Each day's headline is appended to a JSON file, creating a local archive of DP headlines over time.
+
+---
+
+## Quick Start
+
+1. Clone the repository and install required packages:
+    ```bash
+    git clone https://github.com/yourusername/dp-headline-scraper.git
+    cd dp-headline-scraper
+    pip install -r requirements.txt
+    ```
+
+2. Run the scraper:
+    ```bash
+    python script.py
+    ```
+
+3. Results will be saved in `data/daily_pennsylvanian_headlines.json` with timestamps.
+
+---
+
+## Customization
+
+- **To scrape other sections (e.g., Sports, Opinion):**  
+  Update the CSS selectors in `scrape_data_point()` in `script.py` according to the HTML structure of your target section.
+- **To change storage location:**  
+  Edit the path provided to the `DailyEventMonitor` class.
+
+---
+
+## Ethical Use and Compliance
+
+- **Respects DP's [robots.txt](https://www.thedp.com/robots.txt):**  
+  - Not using a disallowed user agent.
+  - Observes crawl-delay (one scrape per day).
+- **Intended for personal, educational, or journalistic purposes.**  
+  - Do not overload DP's servers or violate their terms of use.
+  - Review the [Ethical Guidelines](#some-ethical-guidelines-to-consider) section below.
+
+---
+
+## Part IV Step 4: Modifying the Scraper’s Rule — What Changed?
 
 The original scraper was designed to extract only the main headline from The Daily Pennsylvanian home page. However, the main headline is not always the most interesting or representative story of the day. To make the scraper more flexible and useful, I updated the scraping logic to reliably extract the most recent news article headline from the homepage.
 
