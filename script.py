@@ -29,10 +29,17 @@ def scrape_data_point():
 
     if req.ok:
         soup = bs4.BeautifulSoup(req.text, "html.parser")
-        target_element = soup.find("a", class_="frontpage-link small-link pub-link")
-        data_point = "" if target_element is None else target_element.text
+        sidebar = soup.select_one("div.top-story-sidebar")
+        first_story = sidebar.select_one("div.sidebar-story")
+        headline_link = first_story.select_one("a.frontpage-link")
+        data_point = "" if headline_link is None else headline_link.text
         loguru.logger.info(f"Data point: {data_point}")
         return data_point
+    else:
+        loguru.logger.error(
+            f"Failed to scrape data point: {req.status_code} {req.reason}"
+        )
+        return ""
 
 
 if __name__ == "__main__":
