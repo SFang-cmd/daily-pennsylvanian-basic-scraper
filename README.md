@@ -104,6 +104,51 @@ You can then run the script to try it out with:
 pipenv run python script.py
 ```
 
+---
+
+## Modifying the Scraper’s Rule — What Changed?
+
+The original scraper was designed to extract only the main headline from The Daily Pennsylvanian home page. However, the main headline is not always the most interesting or representative story of the day. To make the scraper more flexible and useful, I updated the scraping logic to reliably extract the most recent news article headline from the homepage.
+
+### New Scraping Approach
+
+To accomplish this, the scraper now:
+
+1. **Finds the sidebar containing the top stories**:  
+   It searches for the `div` element with the class `top-story-sidebar`, which contains a list of highlighted stories.
+
+2. **Selects the first story in the sidebar**:  
+   Within the `top-story-sidebar`, it looks for the first `div` with the class `sidebar-story`. This element represents the most prominent or most recent story featured in the sidebar.
+
+3. **Extracts the headline from the story link**:  
+   It then selects the `a` tag with the class `frontpage-link` inside this story, which contains the actual headline text.
+
+By chaining these selectors, the scraper reliably extracts the most recent or featured news article headline as presented in the homepage sidebar.
+
+### Example: Code Logic
+
+The updated logic in the `scrape_data_point()` function follows this pattern (in Python pseudocode):
+
+```python
+soup = BeautifulSoup(response.text, "html.parser")
+sidebar = soup.select_one("div.top-story-sidebar")
+first_story = sidebar.select_one("div.sidebar-story")
+headline_link = first_story.select_one("a.frontpage-link")
+headline = headline_link.text if headline_link else ""
+```
+
+### Why This Change?
+
+- **More relevant headlines:** The sidebar often features timely and topical stories, not just the static or editorial main headline.
+- **Greater flexibility:** This structure is less likely to break if the main page layout changes, as the sidebar stories are a consistent feature.
+- **Easier extension:** The same approach can be adapted to scrape from other sections (e.g., "Sports", "Opinion", or "Most Read") by tweaking the CSS selectors.
+
+### Next Steps
+
+If you wish to adapt the scraper further (e.g., scrape from other sections like "News", "Sports", "Opinion", or even from other DP publications), you can inspect the HTML structure of your target section and adjust the selectors in the `scrape_data_point()` function accordingly.
+
+---
+
 ## Licensing
 
 This software is distributed under the terms of the MIT License. You have the freedom to use, modify, distribute, and sell it for any purpose. However, you must include the original copyright notice and the permission notice found in the LICENSE file in all copies or substantial portions of the software.
